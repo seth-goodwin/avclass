@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 '''
 AVClass2 labeler
 '''
@@ -6,8 +6,8 @@ AVClass2 labeler
 import os
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(1, os.path.join(script_dir, 'lib/'))
-sys.path.insert(1, os.path.join(script_dir, '../shared/'))
+sys.path.insert(1, os.path.join(script_dir, '../../AVCLASS.bak/avclass2/lib/'))
+sys.path.insert(1, os.path.join(script_dir, '../../AVCLASS.bak/shared/'))
 import argparse
 from avclass2_common import AvLabels
 from operator import itemgetter
@@ -17,11 +17,11 @@ import traceback
 import gzip
 
 # Default tagging file
-default_tag_file = os.path.join(script_dir, "data/default.tagging")
+default_tag_file = os.path.join(script_dir, "../../etc/data/default.tagging")
 # Default expansion file
-default_exp_file = os.path.join(script_dir, "data/default.expansion")
+default_exp_file = os.path.join(script_dir, "../../etc/data/default.expansion")
 # Default taxonomy file
-default_tax_file = os.path.join(script_dir, "data/default.taxonomy")
+default_tax_file = os.path.join(script_dir, "../../etc/data/default.taxonomy")
 
 def guess_hash(h):
     ''' Given a hash string, guess the hash type based on the string length '''
@@ -118,6 +118,8 @@ def main(args):
     stats = {'samples': 0, 'noscans': 0, 'tagged': 0, 'maltagged': 0,
              'FAM': 0, 'CLASS': 0, 'BEH': 0, 'FILE': 0, 'UNK': 0}
 
+    output = ""
+
     # Process each input file
     for ifile in ifile_l:
         # Open file
@@ -127,7 +129,7 @@ def main(args):
             fd = open(ifile, 'r')
 
         # Debug info, file processed
-        sys.stderr.write('[-] Processing input file %s\n' % ifile)
+        #sys.stderr.write('[-] Processing input file %s\n' % ifile)
 
         # Process all lines in file
         for line in fd:
@@ -138,7 +140,7 @@ def main(args):
 
             # Debug info
             if vt_all % 100 == 0:
-                sys.stderr.write('\r[-] %d JSON read' % vt_all)
+                #sys.stderr.write('\r[-] %d JSON read' % vt_all)
                 sys.stderr.flush()
             vt_all += 1
 
@@ -164,9 +166,9 @@ def main(args):
 
             # If the VT report has no AV labels, output and continue
             if not sample_info.labels:
-                sys.stdout.write('%s\t-\t[]\n' % (name))
-                # sys.stderr.write('\nNo AV labels for %s\n' % name)
-                # sys.stderr.flush()
+                #sys.stdout.write('[!] %s\t-\t[]\n' % (name))
+                #sys.stderr.write('\nNo AV labels for %s\n' % name)
+                #sys.stderr.flush()
                 continue
 
             # Compute VT_Count
@@ -259,7 +261,7 @@ def main(args):
                         tag_str = format_tag_pairs(tags, av_labels.taxonomy)
                     else:
                         tag_str = format_tag_pairs(tags)
-                    sys.stdout.write('%s\t%d\t%s%s%s%s\n' %
+                    output += ('%s\t%d\t%s%s%s%s\n' %
                                      (name, vt_count, tag_str, gt_family,
                                       is_pup_str, vtt))
                 else:
@@ -270,18 +272,20 @@ def main(args):
                 continue
 
         # Debug info
-        sys.stderr.write('\r[-] %d JSON read' % vt_all)
-        sys.stderr.flush()
-        sys.stderr.write('\n')
+        if args.v:
+            sys.stderr.write('\r[-] %d JSON read' % vt_all)
+            sys.stderr.flush()
+            sys.stderr.write('\n')
 
         # Close file
         fd.close()
 
     # Print statistics
-    sys.stderr.write(
-            "[-] Samples: %d NoScans: %d NoTags: %d GroundTruth: %d\n" % (
-                vt_all, stats['noscans'], vt_all - stats['tagged'], 
-                len(gt_dict)))
+    if args.v:
+        sys.stderr.write(
+                "[-] Samples: %d NoScans: %d NoTags: %d GroundTruth: %d\n" % (
+                    vt_all, stats['noscans'], vt_all - stats['tagged'],
+                    len(gt_dict)))
 
     # If ground truth, print precision, recall, and F1-measure
     if args.gt:
@@ -360,6 +364,8 @@ def main(args):
         # Close alias file
         alias_fd.close()
         sys.stderr.write('[-] Alias data in %s\n' % (alias_filename))
+
+    return str(output)
 
 
 if __name__=='__main__':
