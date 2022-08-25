@@ -6,8 +6,8 @@ AVClass2 labeler
 import os
 import sys
 script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(1, os.path.join(script_dir, '../../AVCLASS.bak/avclass2/lib/'))
-sys.path.insert(1, os.path.join(script_dir, '../../AVCLASS.bak/shared/'))
+sys.path.insert(1, os.path.join(script_dir, '../avclass2/lib/'))
+sys.path.insert(1, os.path.join(script_dir, '../shared/'))
 import argparse
 from avclass2_common import AvLabels
 from operator import itemgetter
